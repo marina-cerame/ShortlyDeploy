@@ -12,10 +12,13 @@ var LinkSchema = new Schema ({
   timestamp: Date
 });
 
-LinkSchema.pre('save', (model, attrs, options) => {
+LinkSchema.pre('save', function(next) {
+  console.log(this);
+
   var shasum = crypto.createHash('sha1');
-  shasum.update(model.get('url'));
-  model.set('code', shasum.digest('hex').slice(0, 5));
+  shasum.update(this.url);
+  this.code = shasum.digest('hex').slice(0, 5);
+  next();
 });
 
 module.exports = mongoose.model('Link', LinkSchema);
