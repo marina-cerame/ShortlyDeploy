@@ -12,16 +12,17 @@ var UserSchema = new Schema({
   timestamp: Date
 });
 
-UserSchema.pre('save', () => {
+UserSchema.pre('save', function(next) {
   var cipher = Promise.promisify(bcrypt.hash);
-  return cipher(this.get('password'), null, null).bind(this)
-    .then(function(hash) {
-      this.set('password', hash);
-    });
+  return cipher(this.password, null, null, function(error, hash) {
+    console.log('in hash', hash);
+    this.password = hash;
+    next();
+  });
 });
 
-UserSchema.methods.comparePassword = (attemptedPassword, callback) => {
-  bcrypt.compare(attemptedPassword, this.get('password'), (err, isMatch) => {
+UserSchema.methods.comparePassword = function(attemptedPassword, callback) {
+  bcrypt.compare(attemptedPassword, this.password, function(err, isMatch) {
     callback(isMatch);
   });
 };
